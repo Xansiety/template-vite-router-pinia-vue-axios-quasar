@@ -1,0 +1,108 @@
+<script setup>
+import { ref } from "vue"
+import { useUserStore } from "../store/user"
+import { useQuasar } from "quasar"
+const $q = useQuasar()
+const userStore = useUserStore()
+
+const progress = ref(false)
+
+const userForm = ref({
+  email: "test@xyz.com",
+  password: "abc123",
+})
+
+const onSubmit = async () => {
+  const resp = await userStore.loginUser(userForm.value)
+  if (resp) {
+    $q.dialog({
+      title: "Alert",
+      message: resp,
+    })
+      .onOk(() => {
+        // console.log('OK')
+      })
+      .onCancel(() => {
+        // console.log('Cancel')
+      })
+      .onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+  }
+}
+
+const onReset = () => {
+  userForm.value = {
+    email: "",
+    password: "",
+  }
+}
+
+const isValidEmail = (val) => {
+  const emailPattern =
+    /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/
+  return emailPattern.test(val) || "El correo no parece ser válido"
+}
+</script>
+
+<template>
+  <q-page class="q-ma-md">
+    <!-- <span class="text-h3">Forms</span> -->
+    <q-separator spaced />
+    <div class="row justify-center">
+      <q-form
+        @submit.prevent="onSubmit"
+        @reset="onReset"
+        class="q-gutter-xs col-xs-12 col-sm-12 col-md-6 q-pt-xl"
+        v-model="formState"
+      >
+        <q-input
+          filled
+          v-model="userForm.email"
+          label="Correo electrónico"
+          type="email"
+          hint="nombre y usuario"
+          lazy-rules
+          :rules="[
+            (val) => (val && val.length > 0) || 'Por favor escribe algo!!',
+            isValidEmail,
+          ]"
+        />
+
+        <q-input
+          filled
+          type="password"
+          v-model="userForm.password"
+          label="Contraseña"
+          lazy-rules
+          :rules="[
+            (val) => (val && val.length > 0) || 'Por favor escribe algo!!',
+          ]"
+        />
+
+        <div class="row justify-end">
+          <q-btn
+            label="Reset"
+            type="reset"
+            color="primary"
+            flat
+            class="q-ml-sm"
+          />
+          <q-btn
+            :loading="userStore.loadingUser"
+            :disable="userStore.loadingUser"
+            type="submit"
+            color="primary"
+            unelevated
+            style="width: 150px"
+          >
+            Ingresar
+            <template v-slot:loading>
+              <q-spinner-hourglass class="on-left" />
+            </template>
+          </q-btn>
+        </div>
+      </q-form>
+    </div>
+  </q-page>
+</template>
