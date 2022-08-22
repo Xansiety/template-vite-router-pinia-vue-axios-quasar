@@ -1,20 +1,16 @@
 <script setup>
 import { ref } from "vue"
-import { useUserStore } from "../store/user"
-const userStore = useUserStore()
-
+import useAuth from "../composables/useAuth"
+const { checkLoadingSession, logout } = useAuth()
+const loadingSession = checkLoadingSession()
 const leftDrawerOpen = ref(true)
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
-
-const logout = () => {
-  userStore.logOut()
-}
 </script>
 
 <template>
-  <div v-if="userStore.loadingSession">Cargando datos....</div>
+  <div v-if="loadingSession">Cargando datos....</div>
   <q-layout view="lHh Lpr lFf" class="bg-white" v-else>
     <q-header elevated>
       <q-toolbar>
@@ -122,8 +118,8 @@ const logout = () => {
       </q-img>
     </q-drawer>
 
-    <q-page-container>
-      <router-view v-if="!userStore.loadingSession" />
+    <q-page-container v-if="!loadingSession">
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>

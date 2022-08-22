@@ -9,7 +9,7 @@ const requiereAuthGuard = async (to, from, next) => {
   const useStore = useUserStore()
   useStore.loadingSession = true
   const user = await useStore.checkAuthenticationStatus()
-  console.log(user)
+  // console.log(user)
   if (user) {
     next() //si el usuario esta logueado, seguimos
   } else {

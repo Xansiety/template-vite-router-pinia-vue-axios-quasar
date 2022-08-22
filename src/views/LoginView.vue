@@ -1,19 +1,20 @@
 <script setup>
 import { ref } from "vue"
-import { useUserStore } from "../store/user"
+import useAuth from "../composables/useAuth"
 import { useQuasar } from "quasar"
-const $q = useQuasar()
-const userStore = useUserStore()
 
-const progress = ref(false)
+const $q = useQuasar()
+const { singInUser, checkLoadingSession } = useAuth()
+
+const loadingSession = checkLoadingSession()
 
 const userForm = ref({
-  email: "test@xyz.com",
+  email: "ferando543@outlook.com",
   password: "abc123",
 })
 
 const onSubmit = async () => {
-  const resp = await userStore.loginUser(userForm.value)
+  const resp = await singInUser(userForm.value)
   if (resp) {
     $q.dialog({
       title: "Alert",
@@ -54,7 +55,6 @@ const isValidEmail = (val) => {
         @submit.prevent="onSubmit"
         @reset="onReset"
         class="q-gutter-xs col-xs-12 col-sm-12 col-md-6 q-pt-xl"
-        v-model="formState"
       >
         <q-input
           filled
@@ -89,8 +89,8 @@ const isValidEmail = (val) => {
             class="q-ml-sm"
           />
           <q-btn
-            :loading="userStore.loadingUser"
-            :disable="userStore.loadingUser"
+            :loading="loadingSession"
+            :disable="loadingSession"
             type="submit"
             color="primary"
             unelevated
