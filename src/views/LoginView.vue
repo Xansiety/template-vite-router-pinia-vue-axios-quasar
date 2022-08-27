@@ -14,21 +14,14 @@ const userForm = ref({
 })
 
 const onSubmit = async () => {
-  const resp = await singInUser(userForm.value)
-  if (resp) {
-    $q.dialog({
-      title: "Alert",
-      message: resp,
+  const data = await singInUser(userForm.value)
+
+  if (data) {
+    $q.notify({
+      type: "negative",
+      message: data.data,
+      position: "top",
     })
-      .onOk(() => {
-        // console.log('OK')
-      })
-      .onCancel(() => {
-        // console.log('Cancel')
-      })
-      .onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
-      })
   }
 }
 
@@ -47,14 +40,14 @@ const isValidEmail = (val) => {
 </script>
 
 <template>
-  <q-page class="q-ma-md">
+  <q-page padding>
     <!-- <span class="text-h3">Forms</span> -->
     <q-separator spaced />
     <div class="row justify-center">
       <q-form
         @submit.prevent="onSubmit"
         @reset="onReset"
-        class="q-gutter-xs col-xs-12 col-sm-12 col-md-6 q-pt-xl"
+        class="q-gutter-xs col-xs-12 col-sm-12 col-md-4 q-pt-xl"
       >
         <q-input
           filled

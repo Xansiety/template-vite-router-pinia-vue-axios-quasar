@@ -1,9 +1,11 @@
 <script setup>
 import { ref } from "vue"
 import useAuth from "../composables/useAuth"
-const { checkLoadingSession, logout } = useAuth()
+import { useUserStore } from "../store/user"
+const storeUser = useUserStore()
+const { checkLoadingSession, logout, currentUser } = useAuth()
 const loadingSession = checkLoadingSession()
-const leftDrawerOpen = ref(true)
+const leftDrawerOpen = ref(false)
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
@@ -112,8 +114,10 @@ function toggleLeftDrawer() {
           <q-avatar size="56px" class="q-mb-sm">
             <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
           </q-avatar>
-          <div class="text-weight-bold">Razvan Stoenescu</div>
-          <div>@rstoenescu</div>
+          <div class="text-weight-bold">
+            {{ storeUser.userData?.userName }}
+          </div>
+          <div>{{ storeUser.userData?.userName }}</div>
         </div>
       </q-img>
     </q-drawer>

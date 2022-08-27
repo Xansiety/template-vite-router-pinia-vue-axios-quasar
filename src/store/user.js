@@ -10,46 +10,74 @@ export const useUserStore = defineStore("userStore", {
     userData: null,
     loadingUser: false,
     loadingSession: false,
-    idToken: null,
+    accesToken: null,
+    expireIn: null,
     status: "unauthorize",
   }),
   getters: {
     currentStateUser: (state) => state.status,
   },
   actions: {
+    async checkAuthenticationStatus() {
+      const existeToken = (await this.accesToken) !== null ? true : false
+      return existeToken
+    },
+    setTimeRefresh() {
+      setTimeout(() => {
+        // console.log("Se solicita automatico refresh");
+        this.refreshToken()
+      }, 180000)
+    },
+    async setCurrentUser(userData) {
+      //user
+      this.userData = {
+        userName: userData.displayName,
+      }
+      this.status = "authenticated"
+      //Token's
+      this.accesToken = userData.accessToken
+      //storage
+      localStorage.setItem("accessToken", userData.accessToken)
+      localStorage.setItem("refreshToken", userData.refreshToken)
+    },
     async loginUser(UserObj) {
       this.loadingUser = true
       try {
         const { data } = await authApi.post("/cuentas/login", UserObj)
-        if (data.token) {
-          localStorage.setItem("idToken", data.token)
-          this.idToken = data.token
-        }
-        this.userData = UserObj.email
-        this.status = "authenticated"
+        // console.log(data)
+        console.log("onLogin ⚡")
+        this.setTimeRefresh()
+        await this.setCurrentUser(data)
         router.push({ name: "home" })
       } catch (error) {
-        console.log("error", error)
-        return error.message
+        return error.response
       } finally {
         this.loadingUser = false
       }
     },
-    checkAuthenticationStatus() {
-      const idToken = localStorage.getItem("idToken")
-      if (!idToken) {
-        router.push({ name: "login" })
+    async refreshToken() {
+      try {
+        // console.log(this.accesToken)
+        const { data } = await authApi.post("/cuentas/refresh", {
+          AccessToken: localStorage.getItem("accessToken"),
+          RefreshToken: localStorage.getItem("refreshToken"),
+        })
+        // console.log("onRefresh ⚡: ", data)
+        this.setTimeRefresh()
+        this.setCurrentUser(data)
+      } catch (error) {
+        console.log(error)
       }
-      return true
     },
     logOut() {
       //BORRAMOS EL STATE
       this.userData = null
       this.loadingUser = false
-      this.idToken = null
+      this.accesToken = null
       this.status = "unauthorize"
       //BORRAMOS LOS DATOS DEL LOCALSTORAGE
-      localStorage.removeItem("idToken")
+      localStorage.removeItem("accessToken")
+      localStorage.removeItem("refreshToken")
       router.push({ name: "login" })
     },
   },

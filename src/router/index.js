@@ -1,31 +1,51 @@
 import { createRouter, createWebHistory } from "vue-router"
 import { useUserStore } from "../store/user"
+import authLayout from "../layout/authLayout.vue"
 //proteger la ruta
 //https://router.vuejs.org/guide/advanced/navigation-guards.html#per-route-guard
 //middleware para proteger la ruta
 const requiereAuthGuard = async (to, from, next) => {
-  // El store se debe de inicializar dentro de una funcion para implementar el store fuera de un componente
-  // https://pinia.vuejs.org/core-concepts/outside-component-usage.html
+  const requireAuth = to.meta.auth
   const useStore = useUserStore()
   useStore.loadingSession = true
   const user = await useStore.checkAuthenticationStatus()
-  // console.log(user)
-  if (user) {
-    next() //si el usuario esta logueado, seguimos
-  } else {
-    next({ name: "login" }) //si no esta logueado, redireccionamos a la ruta del login
+  const refreshToken = localStorage.getItem("refreshToken")
+  // console.log({ user, refreshToken })
+
+  if (!requireAuth) {
+    useStore.loadingSession = false
+    return next()
+  }
+
+  if (refreshToken !== null && user) {
+    console.log("No se realiza petición refresh token")
+    useStore.loadingSession = false
+    return next()
+  }
+
+  if (!user && refreshToken !== null) {
+    console.log("onRefreshToken ⚡")
+    await useStore.refreshToken() // volvemos a pedir una actualización
+    // validar al usuario o token
+    if (useStore.idToken !== null && refreshToken !== null) {
+      useStore.loadingSession = false
+      return next()
+    }
+    console.log("sin datos para validar")
+    return next({ name: "login" })
   }
   useStore.loadingSession = false
+  return next({ name: "login" })
 }
 
 const routes = [
   {
-    name: "auth-layout",
-    component: () =>
-      import(/* webpackChunkName: "auth" */ "../layout/authLayout.vue"),
+    path: "/",
+    name: "auth",
+    component: authLayout,
     children: [
       {
-        path: "/login",
+        path: "/",
         name: "login",
         component: () =>
           import(/* webpackChunkName: "login" */ "../views/LoginView.vue"),
@@ -34,12 +54,19 @@ const routes = [
   },
   {
     name: "sistema",
+    path: "/sistema",
+    meta: {
+      auth: true,
+    },
     component: () =>
       import(/* webpackChunkName: "sistema" */ "../layout/sistemaLayout.vue"),
     children: [
       {
         path: "/home",
         name: "home",
+        meta: {
+          auth: true,
+        },
         beforeEnter: requiereAuthGuard,
         component: () =>
           import(/* webpackChunkName: "home" */ "../views/HomeView.vue"),
@@ -47,6 +74,9 @@ const routes = [
       {
         path: "/catalog-1",
         name: "catalog-1",
+        // meta: {
+        //   auth: true,
+        // },
         beforeEnter: requiereAuthGuard,
         component: () =>
           import(/* webpackChunkName: "home" */ "../views/CatalogView.vue"),
@@ -61,5 +91,40 @@ const router = createRouter({
   // linkExactActiveClass: "exact-active",
   routes,
 })
+
+// router.beforeEach(async (to, from, next) => {
+//   const requireAuth = to.meta.auth
+//   const useStore = useUserStore()
+//   useStore.loadingSession = true
+//   const user = await useStore.checkAuthenticationStatus()
+//   const refreshToken = localStorage.getItem("refreshToken")
+//   // console.log({ user, refreshToken })
+
+//   if (!requireAuth) {
+//     useStore.loadingSession = false
+//     return next()
+//   }
+
+//   if (refreshToken !== null && user) {
+//     console.log("No se realiza petición refresh token")
+//     useStore.loadingSession = false
+//     return next()
+//   }
+
+//   if (!user && refreshToken !== null) {
+//     console.log("onRefreshToken ⚡")
+//     await useStore.refreshToken() // volvemos a pedir una actualización
+//     // validar al usuario o token
+//     if (useStore.idToken !== null && refreshToken !== null) {
+//       useStore.loadingSession = false
+//       return next()
+//     }
+//     console.log("sin datos")
+//     return next({ name: "login" })
+//   }
+//   useStore.loadingSession = false
+//   console.log("redireccionamos en este 2")
+//   return next({ name: "login" })
+// })
 
 export default router

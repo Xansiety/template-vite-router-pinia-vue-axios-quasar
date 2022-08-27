@@ -3,7 +3,7 @@ import { ref } from "vue"
 </script>
 
 <template>
-  <q-page class="q-ma-md">
+  <q-page padding>
     <!-- <span class="text-h3">Forms</span> -->
     <q-separator spaced />
     <div class="row justify-center">
