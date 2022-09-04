@@ -10,7 +10,7 @@ const loadingSession = checkLoadingSession()
 
 const userForm = ref({
   email: "ferando543@outlook.com",
-  password: "abc123",
+  password: "Uzumaki97$",
 })
 
 const onSubmit = async () => {

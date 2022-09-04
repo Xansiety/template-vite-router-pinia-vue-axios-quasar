@@ -36,33 +36,39 @@ export const useUserStore = defineStore("userStore", {
       this.status = "authenticated"
       //Token's
       this.accesToken = userData.accessToken
+
       //storage
-      localStorage.setItem("accessToken", userData.accessToken)
-      localStorage.setItem("refreshToken", userData.refreshToken)
+      // localStorage.setItem("accessToken", userData.accessToken)
+      // localStorage.setItem("refreshToken", userData.refreshToken)
+      localStorage.setItem("User", this.status)
     },
     async loginUser(UserObj) {
-      this.loadingUser = true
+      this.loadingSession = true
       try {
-        const { data } = await authApi.post("/cuentas/login", UserObj)
+        const response = await authApi.post("/cuentas/login", UserObj)
         // console.log(data)
-        console.log("onLogin ⚡")
+        console.log("onLogin ⚡", response)
         this.setTimeRefresh()
-        await this.setCurrentUser(data)
+        await this.setCurrentUser(response.data)
         router.push({ name: "home" })
       } catch (error) {
+        console.log(error)
         return error.response
       } finally {
-        this.loadingUser = false
+        this.loadingSession = false
       }
     },
     async refreshToken() {
       try {
-        // console.log(this.accesToken)
-        const { data } = await authApi.post("/cuentas/refresh", {
-          AccessToken: localStorage.getItem("accessToken"),
-          RefreshToken: localStorage.getItem("refreshToken"),
+        const { data } = await authApi.get("/cuentas/refresh", {
+          withCredentials: true,
         })
-        // console.log("onRefresh ⚡: ", data)
+        console.log("onRefresh ⚡: ", data)
+        if (data.mensaje !== null) {
+          localStorage.removeItem("User")
+          router.push({ name: "home" })
+          return
+        }
         this.setTimeRefresh()
         this.setCurrentUser(data)
       } catch (error) {
@@ -76,8 +82,7 @@ export const useUserStore = defineStore("userStore", {
       this.accesToken = null
       this.status = "unauthorize"
       //BORRAMOS LOS DATOS DEL LOCALSTORAGE
-      localStorage.removeItem("accessToken")
-      localStorage.removeItem("refreshToken")
+      localStorage.removeItem("User")
       router.push({ name: "login" })
     },
   },

@@ -9,29 +9,30 @@ const requiereAuthGuard = async (to, from, next) => {
   const useStore = useUserStore()
   useStore.loadingSession = true
   const user = await useStore.checkAuthenticationStatus()
-  const refreshToken = localStorage.getItem("refreshToken")
   // console.log({ user, refreshToken })
+  const estatus = localStorage.getItem("User")
 
   if (!requireAuth) {
     useStore.loadingSession = false
     return next()
   }
 
-  if (refreshToken !== null && user) {
+  if (useStore.accesToken !== null && user) {
     console.log("No se realiza petición refresh token")
     useStore.loadingSession = false
     return next()
   }
 
-  if (!user && refreshToken !== null) {
+  if (!user && useStore.accesToken === null && estatus == "authenticated") {
     console.log("onRefreshToken ⚡")
     await useStore.refreshToken() // volvemos a pedir una actualización
     // validar al usuario o token
-    if (useStore.idToken !== null && refreshToken !== null) {
+    if (useStore.idToken !== null && useStore.accesToken !== null) {
       useStore.loadingSession = false
       return next()
     }
     console.log("sin datos para validar")
+    useStore.loadingSession = false
     return next({ name: "login" })
   }
   useStore.loadingSession = false
