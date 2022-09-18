@@ -4,11 +4,12 @@ import axios from "axios"
 axios.defaults.withCredentials = true
 
 const authApi = axios.create({
-  baseURL: "https://localhost:7299/api",
+  baseURL: "https://localhost:7105/api",
   headers: {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
   },
 })
+
 
 export default authApi

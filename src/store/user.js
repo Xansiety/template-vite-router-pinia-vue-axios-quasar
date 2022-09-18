@@ -45,7 +45,7 @@ export const useUserStore = defineStore("userStore", {
     async loginUser(UserObj) {
       this.loadingSession = true
       try {
-        const response = await authApi.post("/cuentas/login", UserObj)
+        const response = await authApi.post("/auth/login", UserObj)
         // console.log(data)
         console.log("onLogin ⚡", response)
         this.setTimeRefresh()
@@ -60,7 +60,7 @@ export const useUserStore = defineStore("userStore", {
     },
     async refreshToken() {
       try {
-        const { data } = await authApi.get("/cuentas/refresh", {
+        const { data } = await authApi.get("/auth/refresh", {
           withCredentials: true,
         })
         console.log("onRefresh ⚡: ", data)
