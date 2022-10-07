@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"
-import { useUserStore } from "../store/user"
-import authLayout from "../layout/authLayout.vue"
+import { useUserStore } from "@/store/user"
+import authLayout from "@/layout/authLayout.vue"
 //proteger la ruta
 //https://router.vuejs.org/guide/advanced/navigation-guards.html#per-route-guard
 //middleware para proteger la ruta

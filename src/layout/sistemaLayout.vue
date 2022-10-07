@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue"
-import useAuth from "../composables/useAuth"
-import { useUserStore } from "../store/user"
+import useAuth from "@/composables/useAuth"
+import { useUserStore } from "@/store/user"
 const storeUser = useUserStore()
 const { checkLoadingSession, logout, currentUser } = useAuth()
 const loadingSession = checkLoadingSession()
